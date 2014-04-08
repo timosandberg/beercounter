@@ -24,11 +24,6 @@ set cheers {
 }
 
 # bindings
-#bind pub - "*tsst*" beercounter:count
-#bind pub - "*tsih*" beercounter:count
-#bind pub - "*kork*" beercounter:count
-#bind pub - "*glug*" beercounter:count
-
 bind pubm - * beercounter:count
 bind pub - !beerstats beercounter:stats
 
@@ -81,7 +76,7 @@ proc beercounter:load {} {
 
 	set data [split $file_data "\n"]
 	foreach line $data {
-		if { [string length $data] > 3 } {
+		if { [string length $data] > 2 } {
 			set temp [split $line ";"]
 			set users([lindex $temp 0]) [lindex $temp 1]
 		}
