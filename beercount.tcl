@@ -9,7 +9,6 @@
 # 
 # Version 0.0.1
 
-
 # variables
 set statfile "beerstats.txt"
 array set users {}
@@ -25,42 +24,55 @@ set cheers {
 }
 
 # bindings
-bind pub - "*tsst*" beercounter:counter
-bind pub - "*tsih*" beercounter:counter
-bind pub - "*kork*" beercounter:counter
-bind pub - "*glug*" beercounter:counter
+#bind pub - "*tsst*" beercounter:count
+#bind pub - "*tsih*" beercounter:count
+#bind pub - "*kork*" beercounter:count
+#bind pub - "*glug*" beercounter:count
+
+bind pubm - * beercounter:count
 bind pub - !beerstats beercounter:stats
-bind pub - !savetest beercounter:save
-bind pub - !loadtest beercounter:load
-bind pub - !reset beercounter:reset
 
 # procedures
-proc beercounter:counter {nick uhost hand chan rest} {
+proc beercounter:count {nick uhost hand chan rest} {
 	global cheers users
 
-	if {![info exists users($nick)]} {
-		set users($nick) 1
-	} else {
-		set users($nick) [expr $users($nick) + 1]
+	set pattern "^\\*(beer|tsih|olut|tsst|kork|sihh|sihahti)\\*$"
+
+	if {[regexp $pattern $rest match]} {
+
+		if {![info exists users($nick)]} {
+			set users($nick) 1
+		} else {
+			set users($nick) [expr $users($nick) + 1]
+		}
+		puthelp "PRIVMSG $chan :[lindex $cheers [rand [llength $cheers]]] ($users($nick))"
+
+		beercounter:save
 	}
-	puthelp "PRIVMSG $chan :[lindex $cheers [rand [llength $cheers]]] ($users($nick))"
 }
 
 proc beercounter:stats {nick uhost hand chan rest} {
 	global users
 
 	set x [list]
-	foreach {k v} [array get users] {
-		if { $k && $v } {
+	foreach { k v } [array get users] {
+		if {$v > 0} {
 		    lappend x [list $k $v]
 		}
 	}
-	set result [lsort -integer -index 1 $x]
+	set result [lsort -integer -decreasing -index 1 $x]
 
-	puthelp "PRIVMSG $chan :TOP 10: $result"
+	set stat_text "Top Drunks: "
+	set position 1
+
+	foreach { k } $result {
+		append stat_text $position ". " [lindex $k 0] " (" [lindex $k 1] "), "
+		set position [expr $position + 1]
+	}
+	puthelp "PRIVMSG $chan :$stat_text"
 }
 
-proc beercounter:load {nick uhost hand chan rest} {
+proc beercounter:load {} {
 	global statfile users
 
 	set fd [open $statfile "r"]
@@ -69,7 +81,6 @@ proc beercounter:load {nick uhost hand chan rest} {
 
 	set data [split $file_data "\n"]
 	foreach line $data {
-    	# do some line processing here
 		if { [string length $data] > 3 } {
 			set temp [split $line ";"]
 			set users([lindex $temp 0]) [lindex $temp 1]
@@ -77,7 +88,7 @@ proc beercounter:load {nick uhost hand chan rest} {
 	}
 }
 
-proc beercounter:save {nick uhost hand chan rest} {
+proc beercounter:save {} {
 	global statfile users
 
 	set fd [open $statfile "w"]
@@ -90,9 +101,10 @@ proc beercounter:save {nick uhost hand chan rest} {
 	close $fd
 }
 
-proc beercounter:reset {nick uhost hand chan rest} {
+proc beercounter:reset {} {
 	global users
-	array unset users 
+	array unset users
 }
 
-puts "Beer Counter"
+puts "Initialising Beer Counter..."
+beercounter:load
