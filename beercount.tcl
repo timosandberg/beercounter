@@ -1,13 +1,14 @@
 # Beer Counter
 #
-# Counts consumed beer and shows stats
+# Eggdrop script to count consumed beer and shows stats
 #
 # Triggers:
 #   *tsst*, *tsih*, *kork*, *glug*
 #
 # Author: Timo Sandberg <warren@iki.fi>
 # 
-# Version 002 
+# Version 0.0.1
+
 
 # variables
 set statfile "beerstats.txt"
@@ -30,10 +31,11 @@ bind pub - "*kork*" beercounter:counter
 bind pub - "*glug*" beercounter:counter
 bind pub - !beerstats beercounter:stats
 bind pub - !savetest beercounter:save
+bind pub - !reset beercounter:reset
 
 #procedures
 proc beercounter:counter {nick uhost hand chan rest} {
-	global users cheers
+	global cheers users
 
 	if {![info exists users($nick)]} {
 		set users($nick) 1
@@ -44,23 +46,35 @@ proc beercounter:counter {nick uhost hand chan rest} {
 }
 
 proc beercounter:stats {nick uhost hand chan rest} {
-	puthelp "PRIVMSG $chan :Coming soon!"
+	global users
+
+	set x [list]
+	foreach {k v} [array get users] {
+	    lappend x [list $k $v]
+	}
+	set result [lsort -integer -index 1 $x]
+
+	puthelp "PRIVMSG $chan :TOP 10: $result"
 }
 
 proc beercounter:load {} {
 	global statfile
-
 }
 
 proc beercounter:save {nick uhost hand chan rest} {
-	global users statfile
+	global statfile users
 
 	set fd [open $statfile "w"]
 
-	foreach { key value } [array names users] {
+	foreach key [array names users] {
 		puts $fd "$key;$users($key)"
 	}
 	close $fd
+}
+
+proc beercounter:reset {nick uhost hand chan rest} {
+	global users
+	array unset users 
 }
 
 puts "Beer Counter"
