@@ -10,6 +10,7 @@
 # Version 002 
 
 # variables
+set statfile "beerstats.txt"
 array set users {}
 
 set cheers {
@@ -28,6 +29,7 @@ bind pub - "*tsih*" beercounter:counter
 bind pub - "*kork*" beercounter:counter
 bind pub - "*glug*" beercounter:counter
 bind pub - !beerstats beercounter:stats
+bind pub - !savetest beercounter:save
 
 #procedures
 proc beercounter:counter {nick uhost hand chan rest} {
@@ -43,6 +45,22 @@ proc beercounter:counter {nick uhost hand chan rest} {
 
 proc beercounter:stats {nick uhost hand chan rest} {
 	puthelp "PRIVMSG $chan :Coming soon!"
+}
+
+proc beercounter:load {} {
+	global statfile
+
+}
+
+proc beercounter:save {nick uhost hand chan rest} {
+	global users statfile
+
+	set fd [open $statfile "w"]
+
+	foreach { key value } [array names users] {
+		puts $fd "$key;$users($key)"
+	}
+	close $fd
 }
 
 puts "Beer Counter"
