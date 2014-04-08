@@ -1,17 +1,17 @@
 Beer Counter
 ===================
 
-Irc Bot Script to track keywords
+Eggdrop tcl script to track some beer related keywords.
 
 Triggers:
 
-	beer, tsih, olut, tsst, kork, sihh, sihahti
+	*(beer|tsih|olut|tsst|kork|sihh|sihahti)*
 	
 		Add one
 
 	!beerstat
 
-		Show channel stats
+		Show statistics
 
 Author 
 ------
