@@ -9,7 +9,7 @@ Triggers:
 	
 		Add one
 
-	!beerstat
+	!beerstats
 
 		Show statistics
 
