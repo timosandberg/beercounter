@@ -31,9 +31,10 @@ bind pub - "*kork*" beercounter:counter
 bind pub - "*glug*" beercounter:counter
 bind pub - !beerstats beercounter:stats
 bind pub - !savetest beercounter:save
+bind pub - !loadtest beercounter:load
 bind pub - !reset beercounter:reset
 
-#procedures
+# procedures
 proc beercounter:counter {nick uhost hand chan rest} {
 	global cheers users
 
@@ -50,15 +51,30 @@ proc beercounter:stats {nick uhost hand chan rest} {
 
 	set x [list]
 	foreach {k v} [array get users] {
-	    lappend x [list $k $v]
+		if { $k && $v } {
+		    lappend x [list $k $v]
+		}
 	}
 	set result [lsort -integer -index 1 $x]
 
 	puthelp "PRIVMSG $chan :TOP 10: $result"
 }
 
-proc beercounter:load {} {
-	global statfile
+proc beercounter:load {nick uhost hand chan rest} {
+	global statfile users
+
+	set fd [open $statfile "r"]
+		set file_data [read $fd]
+    close $fd
+
+	set data [split $file_data "\n"]
+	foreach line $data {
+    	# do some line processing here
+		if { [string length $data] > 3 } {
+			set temp [split $line ";"]
+			set users([lindex $temp 0]) [lindex $temp 1]
+		}
+	}
 }
 
 proc beercounter:save {nick uhost hand chan rest} {
@@ -67,7 +83,9 @@ proc beercounter:save {nick uhost hand chan rest} {
 	set fd [open $statfile "w"]
 
 	foreach key [array names users] {
-		puts $fd "$key;$users($key)"
+		if { [string length $key] > 2 } {
+			puts $fd "$key;$users($key)"
+		}
 	}
 	close $fd
 }
